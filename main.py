@@ -26,27 +26,15 @@ async def on_connect():
     guild_prod = client.get_guild(guild_prod_id)
     guild_test = client.get_guild(guild_test_id)
 
-def addCommands():
-    tree.add_command(
-        discord.app_commands.ContextMenu(
-            name="VCを作成する",
-            callback=on_create_vc_context,
-            type=discord.AppCommandType.message,
-            nsfw=False,
-            auto_locale_strings=True
-        )
-    )
-
-
 def isProd(guild_id: int): return guild_id == custom_vc_category_prod_id
 def isTest(guild_id: int): return guild_id == custom_vc_category_test_id
 def isInChannel(member: discord.Member): return member.voice.channel != None
 def getProdChannel(): return guild_prod.get_channel(custom_vc_category_prod_id)
 def getTestChannel(): return guild_test.get_channel(custom_vc_category_prod_id)
 
-@tree.command(name="VCを作成する", description="カスタムVCを作成することができます")
+@tree.context_menu(name="VCを作成する")
 @discord.app_commands.default_permissions(
-    administrator=True
+    administrator=True #実行を管理者にのみ許可
 )
 async def on_create_vc_context(inter:discord.Interaction, message: discord.Message):
     if isProd(inter.guild.id):
