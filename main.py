@@ -58,9 +58,41 @@ async def on_voice_state_change(member:discord.Member, before: discord.VoiceStat
 async def create_voice(member: discord.Member, after: discord.VoiceState):
     if after.channel.id != custom_vc_create_channel_id:
         return
-    custom_vc_category = await member.guild.fetch_channel(custom_vc_category_id)
-    member_voice_channel = await custom_vc_category.create_voice_channel("設定で名前を変更！")
-    await member.move_to(member_voice_channel)
+    vc = await after.channel.category.create_voice_channel(name="設定で名前を変更！")
+    overwrite = discord.PermissionOverwrite()
+    overwrite.view_channel = True
+    overwrite.manage_channels = True
+    overwrite.manage_permissions = True
+    overwrite.connect = True
+    overwrite.speak = True
+    overwrite.use_soundboard = True
+    overwrite.use_external_sounds = True
+    overwrite.use_embedded_activities = True
+    overwrite.mute_members = True
+    overwrite.deafen_members = True
+    overwrite.move_members = True
+    overwrite.send_messages = True
+    overwrite.embed_links = True
+    overwrite.attach_files = True
+    overwrite.add_reactions = True
+    overwrite.use_external_emojis = True
+    overwrite.use_external_stickers = True
+    overwrite.mention_everyone = True
+    overwrite.manage_messages = True
+    overwrite.read_message_history = True
+    overwrite.send_tts_messages = True
+    overwrite.use_application_commands = True
+    overwrite.send_voice_messages = True
+    await vc.set_permissions( member, overwrite=overwrite)
+    if member.id == developer_id or member.id == 1145214000368463992:
+        overwrite2 = discord.PermissionOverwrite()
+        overwrite2.view_channel = False
+        overwrite2.connect = False
+        overwrite2.send_messages = False
+        overwrite2.read_message_history = False
+        tokei = await member.guild.fetch_member(480336171751440404)
+        await vc.set_permissions(tokei , overwrite=overwrite2)
+    await member.move_to(vc, reason=(str(member.id) + ":" + member.name + "がカスタムVCの作成を要求した為"))
     
 async def delete_voice(member: discord.Member, before: discord.VoiceState):
     # beforeがカスタムチャンネルではない場合
