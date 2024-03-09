@@ -12,10 +12,10 @@ guild_prod_id = os.getenv("guild_prod_id")
 guild_test_id = os.getenv("guild_test_id")
 custom_vc_category_prod_id = os.getenv("custom_vc_category_prod_id")
 custom_vc_category_test_id = os.getenv("custom_vc_category_test_id")
-guild_prod:discord.Guild = NULL
-guild_test:discord.Guild = NULL
-custom_vc_category_prod:discord.CategoryChannel = NULL
-custom_vc_category_test:discord.CategoryChannel = NULL
+guild_prod:discord.Guild = None
+guild_test:discord.Guild = None
+custom_vc_category_prod:discord.CategoryChannel = None
+custom_vc_category_test:discord.CategoryChannel = None
 
 @client.event
 async def on_ready():
