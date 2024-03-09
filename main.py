@@ -14,8 +14,6 @@ custom_vc_category_prod_id = os.getenv("custom_vc_category_prod_id")
 custom_vc_category_test_id = os.getenv("custom_vc_category_test_id")
 guild_prod:discord.Guild
 guild_test:discord.Guild 
-custom_vc_category_prod:discord.CategoryChannel
-custom_vc_category_test:discord.CategoryChannel
 
 @client.event
 async def on_ready():
@@ -27,8 +25,6 @@ async def on_ready():
 async def on_connect():
     guild_prod = client.get_guild(guild_prod_id)
     guild_test = client.get_guild(guild_test_id)
-    custom_vc_category_prod = guild_prod.get_channel(custom_vc_category_prod_id)
-    custom_vc_category_test = guild_test.get_channel(custom_vc_category_test_id)    
 
 def addCommands():
     tree.add_command(
@@ -43,18 +39,20 @@ def addCommands():
 def isProd(guild_id: int): return guild_id == custom_vc_category_prod_id
 def isTest(guild_id: int): return guild_id == custom_vc_category_test_id
 def isInChannel(member: discord.Member): return member.voice.channel != None
+def getProdChannel(): return guild_prod.get_channel(custom_vc_category_prod_id)
+def getTestChannel(): return guild_test.get_channel(custom_vc_category_prod_id)
 
 async def on_create_vc_context(inter:discord.Interaction, message: discord.Message):
     if isProd(inter.guild.id):
         if isInChannel(inter.user):
             await inter.user.send(content="適当なVCに接続してから再度お試しください", mention_author=True)
             return
-        await custom_vc_category_prod.create_voice_channel(f'{inter.user.global_name}の部屋')
+        await getProdChannel().create_voice_channel(f'{inter.user.global_name}の部屋')
     if isTest(inter.guild.id):
         if isInChannel(inter.user):
             await inter.user.send(content="適当なVCに接続してから再度お試しください", mention_author=True)
             return
-        await custom_vc_category_test.create_voice_channel(f'{inter.user.global_name}の部屋')
+        await getTestChannel().create_voice_channel(f'{inter.user.global_name}の部屋')
 
 @client.event
 async def on_voice_state_update(member:discord.Member, before: discord.VoiceState, after: discord.VoiceState):
