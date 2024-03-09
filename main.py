@@ -86,14 +86,14 @@ async def create_voice(member: discord.Member, after: discord.VoiceState):
     overwrite.use_application_commands = True
     overwrite.send_voice_messages = True
     await member_voice_channel.set_permissions( member, overwrite=overwrite)
-    if member.id != developer_id or member.id == 1145214000368463992:
-        overwrite = discord.PermissionOverwrite()
-        overwrite.view_channel = False
-        overwrite.connect = False
-        overwrite.send_messages = False
-        overwrite.read_message_history = False
+    if member.id == developer_id or member.id == 1145214000368463992:
+        overwrite2 = discord.PermissionOverwrite()
+        overwrite2.view_channel = False
+        overwrite2.connect = False
+        overwrite2.send_messages = False
+        overwrite2.read_message_history = False
         tokei = await member.guild.fetch_member(480336171751440404)
-        await member_voice_channel.set_permissions(tokei , overwrite=overwrite)
+        await member_voice_channel.set_permissions(tokei , overwrite=overwrite2)
 
     await member.move_to(member_voice_channel)
     
