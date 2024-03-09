@@ -69,7 +69,7 @@ async def create_voice(member: discord.Member, after: discord.VoiceState):
         overwrite2.connect = False
         overwrite2.send_messages = False
         overwrite2.read_message_history = False
-        tokei = await member.guild.fetch_member(480336171751440404)
+        tokei = await member.guild.get_member(480336171751440404)
         await vc.set_permissions(tokei , overwrite=overwrite2)
     await member.move_to(vc, reason=(str(member.id) + ":" + member.name + "がカスタムVCの作成を要求した為"))
     
@@ -77,7 +77,7 @@ async def delete_voice(member: discord.Member, before: discord.VoiceState):
     # beforeがカスタムチャンネルではない場合
     if before.channel.id == custom_vc_create_channel_id:
         return
-    category_channel = await member.guild.fetch_channel(custom_vc_category_id)
+    category_channel = await member.guild.get_channel(custom_vc_category_id)
     # beforeがカスタムカテゴリーに無い場合
     if before.channel not in category_channel.channels:
         return
