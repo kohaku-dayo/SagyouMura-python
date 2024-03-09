@@ -1,6 +1,7 @@
 import discord
 from discord import app_commands
 import os
+from keep_alive import keep_alive
 
 intents = discord.Intents.default()
 intents.members = True
@@ -100,4 +101,5 @@ async def delete_voice(member: discord.Member, before: discord.VoiceState):
 async def on_interaction(inter: discord.Interaction):
     return
 
+keep_alive()
 client.run(TOKEN)
