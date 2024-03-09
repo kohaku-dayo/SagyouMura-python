@@ -60,29 +60,8 @@ async def create_voice(member: discord.Member, after: discord.VoiceState):
         return
     vc = await after.channel.category.create_voice_channel(name="設定で名前を変更！")
     overwrite = discord.PermissionOverwrite()
-    overwrite.view_channel = True
     overwrite.manage_channels = True
     overwrite.manage_permissions = True
-    overwrite.connect = True
-    overwrite.speak = True
-    overwrite.use_soundboard = True
-    overwrite.use_external_sounds = True
-    overwrite.use_embedded_activities = True
-    overwrite.mute_members = True
-    overwrite.deafen_members = True
-    overwrite.move_members = True
-    overwrite.send_messages = True
-    overwrite.embed_links = True
-    overwrite.attach_files = True
-    overwrite.add_reactions = True
-    overwrite.use_external_emojis = True
-    overwrite.use_external_stickers = True
-    overwrite.mention_everyone = True
-    overwrite.manage_messages = True
-    overwrite.read_message_history = True
-    overwrite.send_tts_messages = True
-    overwrite.use_application_commands = True
-    overwrite.send_voice_messages = True
     await vc.set_permissions( member, overwrite=overwrite)
     if member.id == developer_id or member.id == 1145214000368463992:
         overwrite2 = discord.PermissionOverwrite()
