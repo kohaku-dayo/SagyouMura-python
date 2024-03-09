@@ -60,7 +60,7 @@ async def create_voice(member: discord.Member, after: discord.VoiceState):
     if after.channel.id != custom_vc_create_channel_id:
         return
     custom_vc_category = await member.guild.fetch_channel(custom_vc_category_id)
-    member_voice_channel = await custom_vc_category.create_voice_channel(f'{member.global_name}の部屋')
+    member_voice_channel = await custom_vc_category.create_voice_channel("設定で名前を変更！")
     overwrite = discord.PermissionOverwrite()
     overwrite.view_channel = True
     overwrite.manage_channels = True
