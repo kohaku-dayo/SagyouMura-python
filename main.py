@@ -47,14 +47,11 @@ async def on_voice_state_update(member:discord.Member, before: discord.VoiceStat
 
 async def on_voice_state_join(member:discord.Member, before: discord.VoiceState, after: discord.VoiceState):
     await create_voice(member, after)
-    return
 async def on_voice_state_leave(member:discord.Member, before: discord.VoiceState, after: discord.VoiceState):
     await delete_voice(member, before)
-    return
 async def on_voice_state_change(member:discord.Member, before: discord.VoiceState, after: discord.VoiceState):
     await create_voice(member, after)
     await delete_voice(member, before)
-    return
 
 
 
