@@ -36,12 +36,18 @@ def addCommands():
             auto_locale_strings=True
         )
     )
+
+
 def isProd(guild_id: int): return guild_id == custom_vc_category_prod_id
 def isTest(guild_id: int): return guild_id == custom_vc_category_test_id
 def isInChannel(member: discord.Member): return member.voice.channel != None
 def getProdChannel(): return guild_prod.get_channel(custom_vc_category_prod_id)
 def getTestChannel(): return guild_test.get_channel(custom_vc_category_prod_id)
 
+@tree.command(name="VCを作成する", description="カスタムVCを作成することができます")
+@discord.app_commands.default_permissions(
+    administrator=True
+)
 async def on_create_vc_context(inter:discord.Interaction, message: discord.Message):
     if isProd(inter.guild.id):
         if isInChannel(inter.user):
