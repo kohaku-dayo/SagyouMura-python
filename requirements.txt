@@ -1,1 +1,1 @@
-python3=3.11.8
+discord.py==2.1.1
