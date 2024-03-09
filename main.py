@@ -22,11 +22,13 @@ async def on_ready():
     print('ログインしました')
     addCommands()
     await tree.sync()
+
+@client.event
+async def on_connect():
     guild_prod = client.get_guild(guild_prod_id)
     guild_test = client.get_guild(guild_test_id)
     custom_vc_category_prod = guild_prod.get_channel(custom_vc_category_prod_id)
-    custom_vc_category_test = guild_test.get_channel(custom_vc_category_test_id)
-    
+    custom_vc_category_test = guild_test.get_channel(custom_vc_category_test_id)    
 
 def addCommands():
     tree.add_command(
